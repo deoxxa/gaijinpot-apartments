@@ -2,7 +2,7 @@
   "author": "Conrad Pankoff <deoxxa@fknsrs.biz> (http://www.fknsrs.biz/)",
   "name": "gaijinpot-apartments",
   "description": "Simple read-only interface to http://apartments.gaijinpot.com/",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "homepage": "http://github.com/deoxxa/gaijinpot-apartments",
   "repository": {
     "type": "git",
