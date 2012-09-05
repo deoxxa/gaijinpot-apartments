@@ -147,13 +147,12 @@ GaijinpotApartments.prototype.search = function(params, cb) {
 
     var $ = cheerio.load(data.toString());
 
-    var pagination_tag, pagination = null;
-    if (pagination_tag = $("ul.nav li")[0]) {
-      var _pagination = $(pagination_tag).text().replace(/\s+/g, " ").trim().match(/(\d+) - (\d+) of (\d+)/);
+    var pagination_tag, pagination_matches, pagination = null;
+    if ((pagination_tag = $("ul.nav li")[0]) && (pagination_matches = $(pagination_tag).text().replace(/\s+/g, " ").trim().match(/(\d+) - (\d+) of (\d+)/))) {
       pagination = {
-        from: _pagination[1],
-        to: _pagination[2],
-        of: _pagination[3],
+        from: parseInt(pagination_matches[1], 10),
+        to: parseInt(pagination_matches[2], 10),
+        of: parseInt(pagination_matches[3], 10),
       };
     }
 
