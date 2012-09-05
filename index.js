@@ -1,6 +1,7 @@
 var url = require("url"),
     request = require("request"),
-    cheerio = require("cheerio");
+    cheerio = require("cheerio"),
+    roomy = require("roomy");
 
 module.exports = GaijinpotApartments;
 
@@ -59,6 +60,10 @@ GaijinpotApartments.prototype.get = function(id, cb) {
       i[v.name] = v.data;
       return i;
     }, {});
+
+    if (details.room_type) {
+      details.room_type = roomy.parse(details.room_type);
+    }
 
     var costs = property.find(".costs > li").toArray().map(function(e) {
       return {
@@ -183,7 +188,7 @@ GaijinpotApartments.prototype.search = function(params, cb) {
       var info_matches = null, info = null;
       if (bits = title.match(/^([^ ]+) (.+?) in (.+?), (.+?)$/)) {
         info = {
-          size: bits[1],
+          size: roomy.parse(bits[1]),
           type: bits[2],
           city: bits[3],
           area: bits[4],

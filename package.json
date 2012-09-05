@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "request": "~2.9.203",
-    "cheerio": "~0.9.2"
+    "cheerio": "~0.9.2",
+    "roomy": "~0.0.1"
   },
   "devDependencies": {},
   "optionalDependencies": {}
