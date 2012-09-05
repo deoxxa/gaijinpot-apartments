@@ -128,13 +128,9 @@ GaijinpotApartments.prototype.search = function(params, cb) {
     params = {};
   }
 
-  var _params = [];
-  for (var k in params) {
-    _params.push(k);
-    _params.push(params[k]);
-  }
-
-  var options = url.parse([this.base_url, this.section, "listing"].concat(_params).join("/"));
+  var options = url.parse([this.base_url, this.section, "listing"].concat(Object.keys(params).map(function(k) {
+    return encodeURIComponent(k) + "/" + encodeURIComponent(params[k]);
+  })).join("/"));
 
   request({uri: options, headers: this.headers}, function(err, res, data) {
     if (err) {
