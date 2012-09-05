@@ -183,10 +183,22 @@ GaijinpotApartments.prototype.search = function(params, cb) {
         return i;
       }, {});
 
+      var title = e.find("h3 > a").text().replace(/\s+/g, " ").trim();
+
+      var info_matches = null, info = null;
+      if (bits = title.match(/^([^ ]+) (.+?) in (.+?), (.+?)$/)) {
+        info = {
+          size: bits[1],
+          type: bits[2],
+          city: bits[3],
+          area: bits[4],
+        };
+      }
+
       return {
         id: e.find("h3 > a")[0].attribs.href.match(/view\/(\d+)/)[1],
         title: e.find("h3 > a").text().replace(/\s+/g, " ").trim(),
-        type: e.find("h3 > a").text().replace(/\s+/g, " ").trim().split(" ").shift(),
+        info: info,
         extra: extra,
         location: e.find("ul.location li").first(1).text().replace(/\s+/g, " ").trim(),
         price: e.find("p.price").text().replace(/\s+/g, " ").replace(/^Rent:/, "").trim(),
