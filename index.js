@@ -61,8 +61,42 @@ GaijinpotApartments.prototype.get = function(id, cb) {
       return i;
     }, {});
 
+    $("#inquiry input").toArray().filter(function(e) {
+      return ["prefecture_id", "city_id", "property_id"].indexOf(e.attribs.name) !== -1;
+    }).forEach(function(v) {
+      details[v.attribs.name] = v.attribs.value;
+    });
+
     if (details.room_type) {
       details.room_type = roomy.parse(details.room_type);
+    }
+
+    if (details.available_from) {
+      details.available_from = new Date(details.available_from);
+    }
+
+    if (typeof details.floor === "string" && details.floor.match(/^\d+ \/ \d+F/)) {
+      details.floor = details.floor.split(/ \/ /, 2).reduce(function(i, v) {
+        if (typeof i.number === "undefined") {
+          i.number = parseInt(v, 10);
+        } else if (typeof i.of === "undefined") {
+          i.of = parseInt(v, 10);
+        }
+
+        return i;
+      }, {});
+    }
+
+    ["city_id", "property_id"].forEach(function(k) {
+      details[k] = parseInt(details[k], 10);
+    });
+
+    if (typeof details.size === "string" && details.size.match(/^\d+(\.\d+)?m²$/)) {
+      details.size = parseFloat(details.size.replace(/^(\d+(\.\d+)?).+?$/, "$1"));
+    }
+
+    if (typeof details.year_built === "string" && details.year_built.match(/^\d+$/)) {
+      details.year_built = parseInt(details.year_built, 10);
     }
 
     var costs = property.find(".costs > li").toArray().map(function(e) {
@@ -74,6 +108,29 @@ GaijinpotApartments.prototype.get = function(id, cb) {
       i[v.name] = v.data;
       return i;
     }, {});
+
+    ["rent", "maintenance"].forEach(function(e) {
+      if (typeof costs[e] === "undefined") {
+        return;
+      }
+
+      costs[e] = parseInt(costs[e].replace(/[^0-9]+/g, ""), 10);
+    });
+
+    ["deposit", "key_money", "agency_fee"].forEach(function(e) {
+      if (typeof costs[e] === "undefined") {
+        return;
+      }
+
+      var matches;
+      if (costs[e].match(/^0/)) {
+        costs[e] = 0;
+      } else if ((typeof price === "number") && (matches = costs[e].match(/^(\d+) mths?$/))) {
+        costs[e] = parseInt(matches[1], 10) * price;
+      } else if (costs[e].replace(/[¥,]/g, "").match(/^\d+$/)) {
+        costs[e] = parseInt(costs[e].replace(/[¥,]/g, ""), 10);
+      }
+    });
 
     var transport = property.find(".trainline > li").toArray().map(function(e) {
       var data = $($(e).html().replace(/<br ?\/?>/g, "\n")).text().trim().split(/\n/).map(function(e) {
@@ -109,9 +166,16 @@ GaijinpotApartments.prototype.get = function(id, cb) {
         latitude: (gps_tag.attribs.href || "").match(/lat\/(\d+(?:\.\d+)?)/)[1],
         longitude: (gps_tag.attribs.href || "").match(/lng\/(\d+(?:\.\d+)?)/)[1],
       };
+
+      ["latitude", "longitude"].forEach(function(e) {
+        if (typeof gps[e] === "string" && gps[e].match(/^\d+(\.\d+)?$/)) {
+          gps[e] = parseFloat(gps[e]);
+        }
+      });
     }
 
     return cb(null, {
+      id: id,
       price: price,
       details: details,
       costs: costs,
