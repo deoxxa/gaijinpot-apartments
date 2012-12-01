@@ -213,7 +213,7 @@ GaijinpotApartments.prototype.search = function(params, cb) {
     var $ = cheerio.load(data.toString());
 
     var pagination_tag, pagination_matches, pagination = null;
-    if ((pagination_tag = $("ul.nav li")[0]) && (pagination_matches = $(pagination_tag).text().replace(/\s+/g, " ").trim().match(/(\d+) - (\d+) of (\d+)/))) {
+    if ((pagination_tag = $("ul.nav li").toArray().filter(function(e) { return $(e).find("a").toArray().length === 0; }).shift()) && (pagination_matches = $(pagination_tag).text().replace(/\s+/g, " ").trim().match(/(\d+) - (\d+) of (\d+)/))) {
       pagination = {
         from: parseInt(pagination_matches[1], 10),
         to: parseInt(pagination_matches[2], 10),
@@ -224,12 +224,28 @@ GaijinpotApartments.prototype.search = function(params, cb) {
     var results = $("div.property_rad_box").toArray().map(function(e) {
       e = $(e);
 
+      var id;
+      if ((id = e.find("h3 > a")[0].attribs.href.match(/view\/(\d+)/)[1]) && (id.match(/^\d+$/))) {
+        id = parseInt(id, 10);
+      }
+
+      var price = e.find("p.price").text().replace(/\s+/g, " ").replace(/^Rent:/, "").replace(/,/g, "").trim(), price_matches;
+      if (price_matches = price.match(/^¥(\d+)/)) {
+        price = parseInt(price_matches[1], 10);
+      }
+
       var gps_tag, gps = null;
       if ((gps_tag = e.find("div.show_map > a")[0]) && gps_tag.attribs && gps_tag.attribs.href) {
         gps = {
           latitude: (gps_tag.attribs.href || "").match(/lat\/(\d+(?:\.\d+)?)/)[1],
           longitude: (gps_tag.attribs.href || "").match(/lng\/(\d+(?:\.\d+)?)/)[1],
         };
+
+        ["latitude", "longitude"].forEach(function(e) {
+          if (typeof gps[e] === "string" && gps[e].match(/^\d+(\.\d+)?$/)) {
+            gps[e] = parseFloat(gps[e]);
+          }
+        });
       }
 
       var extra = e.find("ul.extra li").toArray().map(function(e) {
@@ -247,6 +263,27 @@ GaijinpotApartments.prototype.search = function(params, cb) {
         return i;
       }, {});
 
+      ["deposit", "key_money", "agency_fee"].forEach(function(e) {
+        var matches;
+        if (extra[e].match(/^0/)) {
+          extra[e] = 0;
+        } else if ((typeof price === "number") && (matches = extra[e].match(/^(\d+) mths?$/))) {
+          extra[e] = parseInt(matches[1], 10) * price;
+        } else if (extra[e].match(/^\d+$/)) {
+          extra[e] = parseInt(extra[e], 10);
+        }
+      });
+
+      var floor_matches;
+      if ((typeof extra.floor === "string") && (floor_matches = extra.floor.match(/^(\d+)F$/))) {
+        extra.floor = parseInt(floor_matches[1], 10);
+      }
+
+      var area_matches;
+      if ((typeof extra.area === "string") && (area_matches = extra.area.match(/^(\d+) m²$/))) {
+        extra.area = parseInt(area_matches[1], 10);
+      }
+
       var title = e.find("h3 > a").text().replace(/\s+/g, " ").trim();
 
       var info_matches = null, info = null;
@@ -260,12 +297,12 @@ GaijinpotApartments.prototype.search = function(params, cb) {
       }
 
       return {
-        id: e.find("h3 > a")[0].attribs.href.match(/view\/(\d+)/)[1],
+        id: id,
         title: e.find("h3 > a").text().replace(/\s+/g, " ").trim(),
         info: info,
         extra: extra,
         location: e.find("ul.location li").first(1).text().replace(/\s+/g, " ").trim(),
-        price: e.find("p.price").text().replace(/\s+/g, " ").replace(/^Rent:/, "").trim(),
+        price: price,
         gps: gps,
       };
     });
