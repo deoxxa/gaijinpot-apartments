@@ -42,7 +42,7 @@ GaijinpotApartments.prototype.get = function(id, cb) {
 
     property = $(property.first()[0]);
 
-    var price = property.find(".property_header > .price").text().replace(/[^0-9]/g, "");
+    var price = parseInt(property.find(".property_header > .price").text().replace(/[^0-9]/g, ""), 10);
 
     var images = property.find(".photonav_wrapper .thumb").toArray().map(function(e) {
       return {
