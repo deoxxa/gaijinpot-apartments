@@ -12,7 +12,7 @@ GaijinpotApartments.prototype.headers = {
   "Accept-Language": "en",
 };
 
-["rent", "guesthouse", "serviced"].forEach(function(section) {
+["rent", "guesthouse", "serviced_apartments"].forEach(function(section) {
   GaijinpotApartments.prototype[section] = function() {
     return new GaijinpotApartments(this.baseUrl, section);
   };
