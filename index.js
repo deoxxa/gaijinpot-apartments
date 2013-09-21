@@ -235,10 +235,10 @@ GaijinpotApartments.prototype.search = function(params, cb) {
       }
 
       var gpsTag, gps = null;
-      if ((gpsTag = e.find("div.show_map > a")[0]) && gpsTag.attribs && gpsTag.attribs.href) {
+      if ((gpsTag = $("div.map_canvas")[0]) && gpsTag.attribs && gpsTag.attribs["data-lat"] && gpsTag.attribs["data-lng"]) {
         gps = {
-          latitude: (gpsTag.attribs.href || "").match(/lat\/(\d+(?:\.\d+)?)/)[1],
-          longitude: (gpsTag.attribs.href || "").match(/lng\/(\d+(?:\.\d+)?)/)[1],
+          latitude: gpsTag.attribs["data-lat"],
+          longitude: gpsTag.attribs["data-lng"],
         };
 
         ["latitude", "longitude"].forEach(function(e) {
@@ -248,15 +248,15 @@ GaijinpotApartments.prototype.search = function(params, cb) {
         });
       }
 
-      var extra = e.find("ul.extra li").toArray().map(function(e) {
+      var extra = e.find("ul.extra > li").toArray().map(function(e) {
         return $(e).text().replace(/\s+/g, " ").trim();
       }).reduce(function(i, v) {
         if (v.match(/:/)) {
           var bits = v.split(/:/, 2);
           i[bits[0].toLowerCase().trim().replace(/\s+/g, "_")] = bits[1].trim();
-        } else if (!i.area) {
+        } else if (!i.area && v.match(/^\d/)) {
           i.area = v;
-        } else if (!i.floor) {
+        } else if (!i.floor && v.match(/^\d+F$/)) {
           i.floor = v;
         }
 
@@ -280,14 +280,14 @@ GaijinpotApartments.prototype.search = function(params, cb) {
       }
 
       var areaMatches;
-      if ((typeof extra.area === "string") && (areaMatches = extra.area.match(/^(\d+) m²$/))) {
-        extra.area = parseInt(areaMatches[1], 10);
+      if ((typeof extra.area === "string") && (areaMatches = extra.area.match(/^(\d+(\.\d+)?)\s*m²$/))) {
+        extra.area = parseFloat(areaMatches[1]);
       }
 
       var title = e.find("h3 > a").text().replace(/\s+/g, " ").trim();
 
-      var infoMatches = null, info = null;
-      if (bits = title.match(/^([^ ]+) (.+?) in (.+?), (.+?)$/)) {
+      var bits = null, info = null;
+      if (bits = title.match(/^([^ ]+) (.+?) in (.+?) - (.+?)$/)) {
         info = {
           size: roomy.parse(bits[1]),
           type: bits[2],
