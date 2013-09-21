@@ -269,8 +269,8 @@ GaijinpotApartments.prototype.search = function(params, cb) {
           extra[e] = 0;
         } else if ((typeof price === "number") && (matches = extra[e].match(/^(\d+) mths?$/))) {
           extra[e] = parseInt(matches[1], 10) * price;
-        } else if (extra[e].match(/^\d+$/)) {
-          extra[e] = parseInt(extra[e], 10);
+        } else if (extra[e].match(/^¥?[\d,]+$/)) {
+          extra[e] = parseInt(extra[e].replace(/[¥,]/g, ""), 10);
         }
       });
 
