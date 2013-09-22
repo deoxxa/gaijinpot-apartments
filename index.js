@@ -40,6 +40,9 @@ GaijinpotApartments.prototype.get = function(id, cb) {
 
     property = $(property.first()[0]);
 
+    var title = property.find("#details_title > .title").text(),
+        subtitle = property.find("#details_title > .subtitle").text();
+
     var price = parseInt(property.find("#details_title > .price").text().replace(/[^0-9]/g, ""), 10);
 
     var images = property.find("ul#carousel > li > a > img").toArray().map(function(e) {
@@ -176,6 +179,8 @@ GaijinpotApartments.prototype.get = function(id, cb) {
 
     return cb(null, {
       id: id,
+      title: title,
+      subtitle: subtitle,
       price: price,
       details: details,
       costs: costs,
