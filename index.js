@@ -269,6 +269,10 @@ GaijinpotApartments.prototype.search = function(params, cb) {
       }, {});
 
       ["deposit", "key_money", "agency_fee"].forEach(function(e) {
+        if (!extra[e]) {
+          return;
+        }
+
         var matches;
         if (extra[e].match(/^0/)) {
           extra[e] = 0;
