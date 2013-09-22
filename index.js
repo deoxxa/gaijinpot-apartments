@@ -78,6 +78,14 @@ GaijinpotApartments.prototype.get = function(id, cb) {
       details.room_type = roomy.parse(details.room_type);
     }
 
+    if (details.guarantor) {
+      details.guarantor = details.guarantor !== "Not Required";
+    }
+
+    if (details.short_term_stay) {
+      details.short_term_stay = details.short_term_stay === "Available";
+    }
+
     if (details.available_from) {
       details.available_from = new Date(details.available_from);
     }
